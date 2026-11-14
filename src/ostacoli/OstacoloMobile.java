@@ -15,9 +15,14 @@ import java.awt.Color;
  */
 public class OstacoloMobile implements Ostacolo {
     public static final Color COLORE = new Color(80, 200, 120);
+    private enum Verso { SU,  GIU };
 
     private Rettangolo area;   // non è final: l'ostacolo si muove
-    // scrivete qui gli altri campi che vi servono
+    private double velocita;
+    private double limiteAlto;
+    private double limiteBasso;
+    private double posizione;
+    private Verso muove; 
 
     /**
      * Pretende: area non è null; velocita è maggiore di 0; l'area sta fra i due limiti
@@ -25,8 +30,31 @@ public class OstacoloMobile implements Ostacolo {
      * Promette: un ostacolo che sta in area e che, al primo avanza, comincia a scendere.
      */
     public OstacoloMobile(Rettangolo area, double velocita, double limiteAlto, double limiteBasso) {
+        if(area == null){
+           throw new IllegalArgumentException("Area non definita");
+        }
+        if(velocita <= 0){
+            throw new IllegalArgumentException("La velocità deve essere maggiore di 0");
+        }
+        if(limiteAlto >= limiteBasso) {
+            throw new IllegalArgumentException("errore nei limiti");
+        }
+        if(limiteBasso - limiteAlto < area.altezza()) {
+            throw new IllegalArgumentException("area troppo piccola");
+        }
+        if(limiteAlto > area.y()) {
+           throw new IllegalArgumentException("limiteAlto non conforme");
+        }
+        if(area.y() + area.altezza() > limiteBasso) {
+            throw new IllegalArgumentException("limiteBasso non conforme");
+        }
         this.area = area;
-        // scrivete qui
+        this.velocita = velocita;
+        this.limiteAlto = limiteAlto;
+        this.limiteBasso = limiteBasso - area.altezza();
+        this.posizione = area.y();
+        this.muove = Verso.GIU;
+        
     }
 
     @Override
@@ -35,18 +63,18 @@ public class OstacoloMobile implements Ostacolo {
     /** Non si rompe mai: il colpo non cambia niente (né dove sta, né come si muove). */
     @Override
     public void colpisci(Ostacoli campo) {
-        // scrivete qui
+        // niente: l'ostacolo fisso non si rompe
     }
 
     @Override
     public boolean isRotto() {
-        return false; // scrivete qui
+        return false; 
     }
 
     /** Promette: COLORE. */
     @Override
     public Color getColore() {
-        return null; // scrivete qui
+        return COLORE; 
     }
 
     /**
@@ -58,6 +86,21 @@ public class OstacoloMobile implements Ostacolo {
      */
     @Override
     public void avanza() {
-        // scrivete qui
+        if(muove == Verso.GIU){
+            posizione += velocita;
+        }
+        else {
+            posizione -= velocita;
+        }
+
+        if (posizione <= limiteAlto) {
+            posizione = limiteAlto;
+            muove = Verso.GIU;
+        }
+        else if (posizione >= limiteBasso) {
+            posizione = limiteBasso;
+            muove = Verso.SU;
+        }
+        area = new Rettangolo(area.x(), posizione, area.larghezza(), area.altezza());
     }
 }
